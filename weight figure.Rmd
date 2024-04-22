@@ -1,0 +1,98 @@
+---
+title: "figure"
+author: "Xian"
+date: "2023-09-03"
+output: html_document
+---
+
+```{r knitr-opts, echo=FALSE, purl=FALSE}
+options(width=999)
+```
+
+```{r, echo=FALSE}
+ragg_png = function(..., res = 192) {
+  ragg::agg_png(..., res = res, units = "in")
+}
+knitr::opts_chunk$set(dev = "ragg_png", fig.ext = "png")
+```
+
+```{r setup, echo=FALSE}
+# Install packages from "session-info" file:
+#install.packages(c('doFuture', 'future.batchtools', 'rngtools'))
+#install.packages(c('dplyr', 'tidyr', 'tibble', 'ggplot2', 'devtools', 'xtable'))
+
+#devtools::install_github('cran/glmnet',              ref='f4fc95ab49efaad9b6e1728a7c840bc6159501dc')
+#devtools::install_github('susanathey/MCPanel',       ref='6b2706fd7c35f3266048ceb22a7e9a61ae1774da')
+```
+
+```{r imports, message=FALSE}
+library(devtools)
+library(synthdid)
+library(MCPanel)
+library(haven)
+library(rngtools)
+library(doFuture)
+library(future)
+library(data.table)
+library(tidyverse)
+library(doFuture)
+library(future.batchtools)
+library(abind)
+library(doFuture)
+library(tidyverse)
+library(rngtools)
+```
+
+```{r imports-notebook-only, message=FALSE, purl=FALSE}
+library(xtable)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(ggplot2)
+```
+
+```{r}
+data11weight <- read_dta("/Users/x152/Desktop/method paper 分析和文稿/Output/weightsdid_11.dta")
+data12weight <- read_dta("/Users/x152/Desktop/method paper 分析和文稿/Output/weightsdid_12.dta")
+data14weight <- read_dta("/Users/x152/Desktop/method paper 分析和文稿/Output/weightsdid_14.dta")
+datatotalweight <- read_dta("/Users/x152/Desktop/method paper 分析和文稿/Output/weightsdid_total.dta")
+
+ggplot(data11weight)   +
+    facet_wrap("~ class",labeller = label_wrap_gen(width = 5)) +
+    geom_point(aes(x = County, y = gap_sc_11, size = sc_w11), data = data11weight[data11weight$sc_w11 != 0,]) + xlab("Non-NIDAN Areas") + ylab("Difference in Adjusted Past-month Drinking Rate")  +
+    geom_point(aes(x = County, y = gap_sc_11, size = 0.02), data = data11weight[data11weight$sc_w11 == 0,], shape = 4, show.legend = FALSE)  +
+    geom_hline(aes(yintercept = line), size = .75) + 
+      guides(shape = 'none') + theme_light()  +
+    theme(panel.grid = element_blank(), axis.title.x = element_blank(), axis.text.x=element_text(angle = 90,hjust = 1), strip.text.x = element_blank(),legend.direction='horizontal', legend.background=element_blank(), legend.title = element_blank(),strip.background=element_blank(),legend.position=c(.17,.07),text = element_text(size = 6) 
+          )
+
+
+ggplot(data12weight)   +
+    facet_wrap("~ class",labeller = label_wrap_gen(width = 5)) +
+    geom_point(aes(x = County, y = gap_sc_12, size = sc_w12), data = data12weight[data12weight$sc_w12 != 0,]) + xlab("Non-NIDAN Areas") + ylab("Difference in Adjusted Outcomes")  +
+    geom_point(aes(x = County, y = gap_sc_12, size = 0.02), data = data12weight[data12weight$sc_w12 == 0,], shape = 4, show.legend = FALSE)  +
+    geom_hline(aes(yintercept = line), size = .75) + 
+      guides(shape = 'none') + theme_light()  +
+    theme(panel.grid = element_blank(), axis.title.x = element_blank(), axis.text.x=element_text(angle = 90,hjust = 1), strip.text.x = element_blank(),legend.direction='horizontal', legend.background=element_blank(), legend.title = element_blank(),strip.background=element_blank(),legend.position=c(.17,.07),text = element_text(size = 6) 
+          )
+
+
+ggplot(data14weight)   +
+    facet_wrap("~ class",labeller = label_wrap_gen(width = 5)) +
+    geom_point(aes(x = County, y = gap_sc_14, size = sc_w14), data = data14weight[data14weight$sc_w14 != 0,]) + xlab("Non-NIDAN Areas") + ylab("Difference in Adjusted Outcomes")  +
+    geom_point(aes(x = County, y = gap_sc_14, size = 0.02), data = data14weight[data14weight$sc_w14 == 0,], shape = 4, show.legend = FALSE)  +
+    geom_hline(aes(yintercept = line), size = .75) + 
+      guides(shape = 'none') + theme_light()  +
+    theme(panel.grid = element_blank(), axis.title.x = element_blank(), axis.text.x=element_text(angle = 90,hjust = 1), strip.text.x = element_blank(),legend.direction='horizontal', legend.background=element_blank(), legend.title = element_blank(),strip.background=element_blank(),legend.position=c(.17,.07),text = element_text(size = 6) 
+          )
+
+ggplot(datatotalweight)   +
+    facet_wrap("~ class",labeller = label_wrap_gen(width = 5)) +
+    geom_point(aes(x = County, y = gap_sc, size = sc_w), data = datatotalweight[datatotalweight$sc_w != 0,]) + xlab("Non-NIDAN Areas") + ylab("Difference in Adjusted Outcomes")  +
+    geom_point(aes(x = County, y = gap_sc, size = 0.02), data = datatotalweight[datatotalweight$sc_w == 0,], shape = 4, show.legend = FALSE)  +
+    geom_hline(aes(yintercept = line), size = .75) + 
+      guides(shape = 'none') + theme_light()  +
+    theme(panel.grid = element_blank(), axis.title.x = element_blank(), axis.text.x=element_text(angle = 90,hjust = 1), strip.text.x = element_blank(),legend.direction='horizontal', legend.background=element_blank(), legend.title = element_blank(),strip.background=element_blank(),legend.position=c(.17,.07),text = element_text(size = 6) 
+          )
+
+```

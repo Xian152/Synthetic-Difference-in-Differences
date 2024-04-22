@@ -1,0 +1,224 @@
+---
+title: "Run R regression for TWFE"
+output: rmarkdown::html_vignette
+date: "2023-06-29"
+---
+```{r echo=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(did)
+library(haven)
+library(table1)
+library(devtools)
+library(broom)
+library(gtsummary)
+library(flextable)
+
+time.periods <- 5
+sp <- reset.sim()
+sp$te.e <- 1:time.periods
+set.seed(1814)
+
+data <- read_dta("/Users/x152/Desktop/method paper 分析和文稿/Output/final with 18 random select untreated_clear_did.dta")
+
+data <- data.frame(data)
+
+
+```
+
+
+
+
+
+```{r}
+# estimate group-time average treatment effects using att_gt method
+example_attgtwithout <- att_gt(yname = "drinking30",
+                        tname = "year",
+                        idname = "dspcode",
+                        gname = "g",
+                        est_method = "reg",
+                        data = data,
+                        )
+
+# summarize the results
+print(example_attgtwithout)
+summary(example_attgtwithout)
+
+#ggdid(example_attgtwithout)
+```
+
+```{r}
+# estimate group-time average treatment effects using att_gt method
+agg.simplewithout <- aggte(example_attgtwithout, type = "simple")
+summary(agg.simplewithout)
+```
+
+
+```{r}
+# estimate group-time average treatment effects using att_gt method
+agg.gr_without <- aggte(example_attgtwithout, type = "group")
+summary(agg.gr_without)
+```
+```{r}
+# estimate group-time average treatment effects using att_gt method
+agg.calwithout <- aggte(example_attgtwithout, type = "calendar")
+summary(agg.calwithout)
+#ggdid(agg.calwithout)
+
+```
+
+```{r}
+# estimate group-time average treatment effects using att_gt method
+agg.eswithout <- aggte(example_attgtwithout, type = "dynamic")
+summary(agg.eswithout)
+ggdid(agg.eswithout)
+```
+
+```{r setup}
+data_fin <- read_dta("/Users/x152/Desktop/method paper 分析和文稿/Output/final with_weightsdid.dta")
+data_fin <- data.frame(data_fin)
+```
+
+```{r}
+# estimate group-time average treatment effects using att_gt method with Sdid weight 
+example_attgt_sdid <- att_gt(yname = "drinking30",
+                        tname = "year",
+                        idname = "dspcode",
+                        gname = "g",
+                        weightsname = "sdid_w",
+                        xformla = ~sex+prop_65+log_gdp,
+                        est_method = "reg",
+                        data = data_fin,
+                        )
+# summarize the results
+summary(example_attgt_sdid)
+
+#ggdid(example_attgt_sdid)
+
+```
+
+
+```{r}
+# estimate group-time average treatment effects using att_gt method
+agg.simple_sdid <- aggte(example_attgt_sdid, type = "simple")
+summary(agg.simple_sdid)
+```
+```{r}
+# estimate group-time average treatment effects using att_gt method
+agg.gs_sdid <- aggte(example_attgt_sdid, type = "group")
+summary(agg.gs_sdid)
+ggdid(agg.gs_sdid)
+```
+
+
+```{r}
+# estimate group-time average treatment effects using att_gt method
+agg.es_sdid <- aggte(example_attgt_sdid, type = "dynamic")
+summary(agg.es_sdid)
+ggdid(agg.es_sdid)
+
+library(flextable)
+install.packages("jtools")
+install.packages("huxtable")
+library(jtools)
+library(huxtable)
+huxtable::huxreg()
+
+
+
+```
+
+```{r, fig.width=6, fig.align='center', out.width="90%", dpi = 200}
+agg.cal_sdid <- aggte(example_attgt_sdid, type = "calendar")
+summary(agg.cal_sdid)
+#ggdid(agg.cal_sdid)
+```
+
+```{r, fig.width=6, fig.align='center', out.width="90%", dpi = 200}
+agg.gs_sdid <- aggte(example_attgt_sdid, type = "group")
+summary(agg.gs_sdid)
+#ggdid(agg.gs_sdid)
+```
+
+```{r}
+# estimate group-time average treatment effects using att_gt method with sc weight 
+example_attgt_sc <- att_gt(yname = "drinking30",
+                        tname = "year",
+                        idname = "dspcode",
+                        gname = "g",
+                        weightsname = "sc_w",
+                        #xformla = ~sex+prop_65+log_gdp,
+                        est_method = "reg",
+                        data = data_fin,
+                        )
+
+# summarize the results
+summary(example_attgt_sc)
+
+#ggdid(example_attgt_sc)
+
+```
+
+
+```{r}
+# estimate group-time average treatment effects using att_gt method
+agg.simple_sc <- aggte(example_attgt_sc, type = "simple")
+summary(agg.simple_sc)
+
+agg.es_sc <- aggte(example_attgt_sc, type = "dynamic")
+summary(agg.es_sc)
+ggdid(agg.es_sc)
+
+agg.cal_sc <- aggte(example_attgt_sc, type = "calendar")
+summary(agg.cal_sc)
+#ggdid(agg.cal_sc)
+
+agg.simple_sc_test <- aggte(estimates_did11, type = "simple")
+
+```
+
+
+```{r}
+agg.gs_sc <- aggte(example_attgt_sc, type = "group")
+summary(agg.gs_sc)
+#ggdid(agg.gs_sc)
+```
+
+```{r }
+class(agg.eswithout)
+agg.eswithout <- lm(agg.eswithout)
+agg.es_sc <- lm(agg.es_sc)
+agg.es_sdid <- lm(agg.es_sdid)
+
+library(flextable)
+library(jtools)
+library(huxtable)
+huxtable::huxreg()
+
+  jtools::export_summs(agg.eswithout,agg.es_sc,agg.es_sdid,
+               scale = F, digits = 3,
+               error_format = "[{conf.low}, {conf.high}]",
+               error_pos = c("below", "right", "same"),
+               ci_level = 0.95,
+               model.names = c("DID","SC","SDID"),
+               statistics = c(N = "nobs", R2 = "r.squared",P="p.value"),
+               stars = c(`***` = 0.001, `**` = 0.01, `*` = 0.05),
+               scale = TRUE, robust = TRUE,
+                to.file = "docx", file.name = "/Users/x152/Desktop/method paper 分析和文稿/Output/dynamicregression_result.docx")
+  
+print(agg.eswithout)  
+```
+
+
+#加入结局
+```{r}
+attgt_sc <- 
+agg.gs_sc <- aggte(example_attgt_sc, type = "group")
+summary(agg.gs_sc)
+#ggdid(agg.gs_sc)
+```
